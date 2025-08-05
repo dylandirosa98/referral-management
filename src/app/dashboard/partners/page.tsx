@@ -73,26 +73,31 @@ const getStatusBadge = (status: string) => {
 }
 
 async function getPartnersData() {
-  const partners = await prisma.partner.findMany({
-    orderBy: {
-      createdAt: 'desc'
-    }
-  })
+  try {
+    const partners = await prisma.partner.findMany({
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
 
-  return partners.map((partner: any) => ({
-    id: partner.id,
-    companyName: partner.companyName,
-    contactName: partner.contactName,
-    email: partner.email,
-    phone: partner.phone || '',
-    businessType: partner.businessType,
-    tier: partner.tier,
-    commissionRate: partner.commissionRate.toNumber(),
-    referralCount: partner.referralCount,
-    totalCommissionEarned: partner.totalCommissionEarned.toNumber(),
-    status: partner.status,
-    createdAt: partner.createdAt.toISOString()
-  }))
+    return partners.map((partner: any) => ({
+      id: partner.id,
+      companyName: partner.companyName,
+      contactName: partner.contactName,
+      email: partner.email,
+      phone: partner.phone || '',
+      businessType: partner.businessType,
+      tier: partner.tier,
+      commissionRate: partner.commissionRate.toNumber(),
+      referralCount: partner.referralCount,
+      totalCommissionEarned: partner.totalCommissionEarned.toNumber(),
+      status: partner.status,
+      createdAt: partner.createdAt.toISOString()
+    }))
+  } catch (error) {
+    console.error('Database error in getPartnersData:', error)
+    return []
+  }
 }
 
 export default async function PartnersPage() {

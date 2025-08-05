@@ -25,112 +25,131 @@ const getStatusBadge = (status: string) => {
 }
 
 async function getDashboardData() {
-  // Get partner stats
-  const totalPartners = await prisma.partner.count()
-  const activePartners = await prisma.partner.count({
-    where: { status: 'active' }
-  })
+  try {
+    // Get partner stats
+    const totalPartners = await prisma.partner.count()
+    const activePartners = await prisma.partner.count({
+      where: { status: 'active' }
+    })
 
-  // Get referral stats
-  const totalReferrals = await prisma.referral.count()
-  const activeReferrals = await prisma.referral.count({
-    where: {
-      status: {
-        in: ['new', 'contacted', 'quoted', 'scheduled', 'in_progress']
-      }
-    }
-  })
-
-  // Get commission stats
-  const pendingCommissions = await prisma.referral.aggregate({
-    where: {
-      status: {
-        in: ['new', 'contacted', 'quoted', 'scheduled', 'in_progress']
-      }
-    },
-    _sum: {
-      commissionDue: true
-    }
-  })
-
-  const paidCommissions = await prisma.referral.aggregate({
-    where: {
-      status: 'won'
-    },
-    _sum: {
-      commissionDue: true
-    }
-  })
-
-  // Get conversion rate
-  const wonReferrals = await prisma.referral.count({
-    where: { status: 'won' }
-  })
-  const conversionRate = totalReferrals > 0 ? Math.round((wonReferrals / totalReferrals) * 100) : 0
-
-  // Get monthly growth (current month vs last month)
-  const currentMonth = new Date()
-  currentMonth.setDate(1)
-  currentMonth.setHours(0, 0, 0, 0)
-  
-  const lastMonth = new Date(currentMonth)
-  lastMonth.setMonth(lastMonth.getMonth() - 1)
-
-  const currentMonthReferrals = await prisma.referral.count({
-    where: {
-      createdAt: {
-        gte: currentMonth
-      }
-    }
-  })
-
-  const lastMonthReferrals = await prisma.referral.count({
-    where: {
-      createdAt: {
-        gte: lastMonth,
-        lt: currentMonth
-      }
-    }
-  })
-
-  const monthlyGrowth = lastMonthReferrals > 0 
-    ? Math.round(((currentMonthReferrals - lastMonthReferrals) / lastMonthReferrals) * 100)
-    : currentMonthReferrals > 0 ? 100 : 0
-
-  // Get recent referrals
-  const recentReferrals = await prisma.referral.findMany({
-    include: {
-      partner: {
-        select: {
-          companyName: true
+    // Get referral stats
+    const totalReferrals = await prisma.referral.count()
+    const activeReferrals = await prisma.referral.count({
+      where: {
+        status: {
+          in: ['new', 'contacted', 'quoted', 'scheduled', 'in_progress']
         }
       }
-    },
-    orderBy: {
-      createdAt: 'desc'
-    },
-    take: 5
-  })
+    })
 
-  return {
-    stats: {
-      totalPartners,
-      activePartners,
-      totalReferrals,
-      activeReferrals,
-      pendingCommissions: pendingCommissions._sum.commissionDue?.toNumber() || 0,
-      paidCommissions: paidCommissions._sum.commissionDue?.toNumber() || 0,
-      conversionRate,
-      monthlyGrowth
-    },
-    recentReferrals: recentReferrals.map((referral: any) => ({
-      id: referral.id,
-      customerName: referral.customerName,
-      partnerName: referral.partner.companyName,
-      status: referral.status,
-      estimatedValue: referral.estimatedValue.toNumber(),
-      createdAt: referral.createdAt.toISOString()
-    }))
+    // Get commission stats
+    const pendingCommissions = await prisma.referral.aggregate({
+      where: {
+        status: {
+          in: ['new', 'contacted', 'quoted', 'scheduled', 'in_progress']
+        }
+      },
+      _sum: {
+        commissionDue: true
+      }
+    })
+
+    const paidCommissions = await prisma.referral.aggregate({
+      where: {
+        status: 'won'
+      },
+      _sum: {
+        commissionDue: true
+      }
+    })
+
+    // Get conversion rate
+    const wonReferrals = await prisma.referral.count({
+      where: { status: 'won' }
+    })
+    const conversionRate = totalReferrals > 0 ? Math.round((wonReferrals / totalReferrals) * 100) : 0
+
+    // Get monthly growth (current month vs last month)
+    const currentMonth = new Date()
+    currentMonth.setDate(1)
+    currentMonth.setHours(0, 0, 0, 0)
+    
+    const lastMonth = new Date(currentMonth)
+    lastMonth.setMonth(lastMonth.getMonth() - 1)
+
+    const currentMonthReferrals = await prisma.referral.count({
+      where: {
+        createdAt: {
+          gte: currentMonth
+        }
+      }
+    })
+
+    const lastMonthReferrals = await prisma.referral.count({
+      where: {
+        createdAt: {
+          gte: lastMonth,
+          lt: currentMonth
+        }
+      }
+    })
+
+    const monthlyGrowth = lastMonthReferrals > 0 
+      ? Math.round(((currentMonthReferrals - lastMonthReferrals) / lastMonthReferrals) * 100)
+      : currentMonthReferrals > 0 ? 100 : 0
+
+    // Get recent referrals
+    const recentReferrals = await prisma.referral.findMany({
+      include: {
+        partner: {
+          select: {
+            companyName: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 5
+    })
+
+    return {
+      stats: {
+        totalPartners,
+        activePartners,
+        totalReferrals,
+        activeReferrals,
+        pendingCommissions: pendingCommissions._sum.commissionDue?.toNumber() || 0,
+        paidCommissions: paidCommissions._sum.commissionDue?.toNumber() || 0,
+        conversionRate,
+        monthlyGrowth
+      },
+      recentReferrals: recentReferrals.map((referral: any) => ({
+        id: referral.id,
+        customerName: referral.customerName,
+        partnerName: referral.partner.companyName,
+        status: referral.status,
+        estimatedValue: referral.estimatedValue.toNumber(),
+        createdAt: referral.createdAt.toISOString()
+      }))
+    }
+  } catch (error) {
+    console.error('Database error in getDashboardData:', error)
+    
+    // Return fallback data when database is unavailable
+    return {
+      stats: {
+        totalPartners: 0,
+        activePartners: 0,
+        totalReferrals: 0,
+        activeReferrals: 0,
+        pendingCommissions: 0,
+        paidCommissions: 0,
+        conversionRate: 0,
+        monthlyGrowth: 0
+      },
+      recentReferrals: []
+    }
   }
 }
 

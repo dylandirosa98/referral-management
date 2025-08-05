@@ -46,66 +46,71 @@ const formatProjectType = (type: string) => {
 }
 
 async function getPartnerData(slug: string) {
-  const partner = await prisma.partner.findUnique({
-    where: { 
-      portalSlug: slug,
-      status: 'active'
-    },
-    include: {
-      referrals: {
-        orderBy: { createdAt: 'desc' },
-        take: 5
+  try {
+    const partner = await prisma.partner.findUnique({
+      where: { 
+        portalSlug: slug,
+        status: 'active'
+      },
+      include: {
+        referrals: {
+          orderBy: { createdAt: 'desc' },
+          take: 5
+        }
       }
-    }
-  })
+    })
 
-  if (!partner) {
+    if (!partner) {
+      return null
+    }
+
+    // Calculate this month's referrals
+    const currentMonth = new Date()
+    currentMonth.setDate(1)
+    currentMonth.setHours(0, 0, 0, 0)
+    
+    const thisMonthReferrals = await prisma.referral.count({
+      where: {
+        partnerId: partner.id,
+        createdAt: {
+          gte: currentMonth
+        }
+      }
+    })
+
+    // Calculate pending commission
+    const pendingCommission = await prisma.referral.aggregate({
+      where: {
+        partnerId: partner.id,
+        status: {
+          in: ['new', 'contacted', 'quoted', 'scheduled', 'in_progress']
+        }
+      },
+      _sum: {
+        commissionDue: true
+      }
+    })
+
+    // Calculate conversion rate
+    const totalReferrals = partner.referralCount
+    const wonReferrals = await prisma.referral.count({
+      where: {
+        partnerId: partner.id,
+        status: 'won'
+      }
+    })
+    
+    const conversionRate = totalReferrals > 0 ? Math.round((wonReferrals / totalReferrals) * 100) : 0
+
+    return {
+      ...partner,
+      thisMonthReferrals,
+      pendingCommission: pendingCommission._sum.commissionDue || 0,
+      conversionRate
+    }
+  } catch (error) {
+    console.error('Database error in getPartnerData:', error)
     return null
-  }
-
-  // Calculate this month's referrals
-  const currentMonth = new Date()
-  currentMonth.setDate(1)
-  currentMonth.setHours(0, 0, 0, 0)
-  
-  const thisMonthReferrals = await prisma.referral.count({
-    where: {
-      partnerId: partner.id,
-      createdAt: {
-        gte: currentMonth
-      }
-    }
-  })
-
-  // Calculate pending commission
-  const pendingCommission = await prisma.referral.aggregate({
-    where: {
-      partnerId: partner.id,
-      status: {
-        in: ['new', 'contacted', 'quoted', 'scheduled', 'in_progress']
-      }
-    },
-    _sum: {
-      commissionDue: true
-    }
-  })
-
-  // Calculate conversion rate
-  const totalReferrals = partner.referralCount
-  const wonReferrals = await prisma.referral.count({
-    where: {
-      partnerId: partner.id,
-      status: 'won'
-    }
-  })
-  
-  const conversionRate = totalReferrals > 0 ? Math.round((wonReferrals / totalReferrals) * 100) : 0
-
-  return {
-    ...partner,
-    thisMonthReferrals,
-    pendingCommission: pendingCommission._sum.commissionDue || 0,
-    conversionRate
   }
 }
 

@@ -51,32 +51,37 @@ const formatProjectType = (type: string) => {
 }
 
 async function getReferralsData() {
-  const referrals = await prisma.referral.findMany({
-    include: {
-      partner: {
-        select: {
-          companyName: true
+  try {
+    const referrals = await prisma.referral.findMany({
+      include: {
+        partner: {
+          select: {
+            companyName: true
+          }
         }
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
-    },
-    orderBy: {
-      createdAt: 'desc'
-    }
-  })
+    })
 
-  return referrals.map((referral: any) => ({
-    id: referral.id,
-    customerName: referral.customerName,
-    customerEmail: referral.customerEmail || '',
-    customerPhone: referral.customerPhone || '',
-    partnerName: referral.partner.companyName,
-    projectType: referral.projectType,
-    roofType: referral.roofType || '',
-    estimatedValue: referral.estimatedValue.toNumber(),
-    status: referral.status,
-    urgency: referral.urgency,
-    createdAt: referral.createdAt.toISOString()
-  }))
+    return referrals.map((referral: any) => ({
+      id: referral.id,
+      customerName: referral.customerName,
+      customerEmail: referral.customerEmail || '',
+      customerPhone: referral.customerPhone || '',
+      partnerName: referral.partner.companyName,
+      projectType: referral.projectType,
+      roofType: referral.roofType || '',
+      estimatedValue: referral.estimatedValue.toNumber(),
+      status: referral.status,
+      urgency: referral.urgency,
+      createdAt: referral.createdAt.toISOString()
+    }))
+  } catch (error) {
+    console.error('Database error in getReferralsData:', error)
+    return []
+  }
 }
 
 export default async function ReferralsPage() {
