@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { partnerSchema } from '@/lib/validations'
 import { sendEmail } from '@/lib/email'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 export async function GET(request: NextRequest) {
   try {
@@ -121,8 +122,12 @@ export async function POST(request: NextRequest) {
       }
     
     // Handle unique constraint violation
-    if (error instanceof Error && error.message.includes('Unique constraint')) {
-      return NextResponse.json({ error: 'Partner with this email already exists' }, { status: 400 })
+    if (error instanceof PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') { // Unique constraint violation
+        return NextResponse.json({
+          error: `A partner with this email already exists.`
+        }, { status: 409 }); // 409 Conflict
+      }
     }
     
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

@@ -25,7 +25,13 @@ export const partnerSchema = z.object({
   tier: z.enum(['bronze', 'silver', 'gold']).default('bronze'),
   commissionRate: z.number().min(0).max(100).default(5),
   notes: z.string().optional().or(z.literal(''))
-})
+}).transform((data) => {
+  // If address object exists but all fields are empty, set to undefined
+  if (data.address && !data.address.street && !data.address.city && !data.address.state && !data.address.zip) {
+    return { ...data, address: undefined };
+  }
+  return data;
+});
 
 // Referral validation schema
 export const referralSchema = z.object({
