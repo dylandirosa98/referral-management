@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { partnerSchema } from '@/lib/validations'
 import { sendEmail } from '@/lib/email'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 export async function GET(request: NextRequest) {
   try {
@@ -58,6 +57,11 @@ export async function POST(request: NextRequest) {
     body = await request.json()
     console.log('Received partner data:', JSON.stringify(body, null, 2))
     
+    // Test database connection
+    console.log('Testing database connection...')
+    await prisma.$connect()
+    console.log('Database connection successful')
+    
     // Validate the data
     const validatedData = partnerSchema.parse(body)
     console.log('Validated partner data:', JSON.stringify(validatedData, null, 2))
@@ -97,10 +101,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(partner, { status: 201 })
   } catch (error) {
-    console.error('API error:', error)
+    console.error('=== API ERROR DETAILS ===')
+    console.error('Error:', error)
     console.error('Error type:', typeof error)
     console.error('Error name:', (error as any)?.name)
     console.error('Error message:', (error as any)?.message)
+    console.error('Error code:', (error as any)?.code)
+    console.error('Error stack:', (error as any)?.stack)
     
           if (error instanceof Error && error.name === 'ZodError') {
         const issues = (error as any).issues
@@ -121,13 +128,18 @@ export async function POST(request: NextRequest) {
         }, { status: 400 })
       }
     
-    // Handle unique constraint violation
-    if (error instanceof PrismaClientKnownRequestError) {
-      if (error.code === 'P2002') { // Unique constraint violation
-        return NextResponse.json({
-          error: `A partner with this email already exists.`
-        }, { status: 409 }); // 409 Conflict
-      }
+    // Handle unique constraint violation (duplicate email)
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+      return NextResponse.json({
+        error: `A partner with this email already exists.`
+      }, { status: 409 }); // 409 Conflict
+    }
+    
+    // Handle other database constraint errors
+    if (error instanceof Error && error.message.includes('Unique constraint')) {
+      return NextResponse.json({
+        error: `A partner with this email already exists.`
+      }, { status: 409 });
     }
     
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
