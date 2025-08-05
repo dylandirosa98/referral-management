@@ -52,13 +52,14 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  let body: any
   try {
-    const body = await request.json()
-    console.log('Received partner data:', body)
+    body = await request.json()
+    console.log('Received partner data:', JSON.stringify(body, null, 2))
     
     // Validate the data
     const validatedData = partnerSchema.parse(body)
-    console.log('Validated partner data:', validatedData)
+    console.log('Validated partner data:', JSON.stringify(validatedData, null, 2))
     
     // Generate portal slug from company name
     const portalSlug = validatedData.companyName
@@ -96,13 +97,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(partner, { status: 201 })
   } catch (error) {
     console.error('API error:', error)
+    console.error('Error type:', typeof error)
+    console.error('Error name:', (error as any)?.name)
+    console.error('Error message:', (error as any)?.message)
     
     if (error instanceof Error && error.name === 'ZodError') {
-      console.error('Zod validation error:', error)
+      console.error('Zod validation error details:', JSON.stringify((error as any).issues, null, 2))
       return NextResponse.json({ 
         error: 'Invalid data provided', 
         details: error.message,
-        issues: (error as any).issues
+        issues: (error as any).issues,
+        receivedData: body
       }, { status: 400 })
     }
     

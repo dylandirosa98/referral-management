@@ -29,6 +29,8 @@ export default function NewPartnerPage() {
       
       if (!response.ok) {
         const error = await response.json()
+        console.error('Full error response:', error)
+        console.error('Validation issues:', error.issues)
         throw new Error(error.error || 'Failed to create partner')
       }
       
