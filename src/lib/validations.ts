@@ -16,9 +16,12 @@ export const partnerSchema = z.object({
     state: z.string().optional().or(z.literal('')),
     zip: z.string().optional().or(z.literal(''))
   }).optional(),
-  serviceAreas: z.string().optional().or(z.literal('')).transform((val) => 
-    val ? val.split(',').map(area => area.trim()).filter(Boolean) : []
-  ),
+  serviceAreas: z.union([
+    z.string().transform((val) => 
+      val ? val.split(',').map(area => area.trim()).filter(Boolean) : []
+    ),
+    z.array(z.string())
+  ]).optional().default([]),
   tier: z.enum(['bronze', 'silver', 'gold']).default('bronze'),
   commissionRate: z.number().min(0).max(100).default(5),
   notes: z.string().optional().or(z.literal(''))
