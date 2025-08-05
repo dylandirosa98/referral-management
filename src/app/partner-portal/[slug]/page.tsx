@@ -86,7 +86,12 @@ const formatProjectType = (type: string) => {
   return type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
 }
 
-export default function PartnerDashboardPage({ params }: { params: { slug: string } }) {
+export default async function PartnerDashboardPage({ 
+  params 
+}: { 
+  params: Promise<{ slug: string }> 
+}) {
+  const { slug } = await params;
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -102,7 +107,7 @@ export default function PartnerDashboardPage({ params }: { params: { slug: strin
                 {partnerData.tier.charAt(0).toUpperCase() + partnerData.tier.slice(1)} Partner
               </Badge>
               <Button asChild>
-                <Link href={`/partner-portal/${params.slug}/referrals/new`}>
+                <Link href={`/partner-portal/${slug}/referrals/new`}>
                   <Plus className="mr-2 h-4 w-4" />
                   Submit Referral
                 </Link>
@@ -199,7 +204,7 @@ export default function PartnerDashboardPage({ params }: { params: { slug: strin
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Recent Referrals</CardTitle>
               <Button variant="outline" size="sm" asChild>
-                <Link href={`/partner-portal/${params.slug}/referrals`}>
+                <Link href={`/partner-portal/${slug}/referrals`}>
                   <Eye className="mr-2 h-4 w-4" />
                   View All
                 </Link>
@@ -242,21 +247,21 @@ export default function PartnerDashboardPage({ params }: { params: { slug: strin
             </CardHeader>
             <CardContent className="space-y-4">
               <Button className="w-full justify-start" size="lg" asChild>
-                <Link href={`/partner-portal/${params.slug}/referrals/new`}>
+                <Link href={`/partner-portal/${slug}/referrals/new`}>
                   <Plus className="mr-2 h-4 w-4" />
                   Submit New Referral
                 </Link>
               </Button>
               
               <Button className="w-full justify-start" variant="outline" asChild>
-                <Link href={`/partner-portal/${params.slug}/referrals`}>
+                <Link href={`/partner-portal/${slug}/referrals`}>
                   <FileText className="mr-2 h-4 w-4" />
                   View All Referrals
                 </Link>
               </Button>
               
               <Button className="w-full justify-start" variant="outline" asChild>
-                <Link href={`/partner-portal/${params.slug}/earnings`}>
+                <Link href={`/partner-portal/${slug}/earnings`}>
                   <DollarSign className="mr-2 h-4 w-4" />
                   View Earnings History
                 </Link>
