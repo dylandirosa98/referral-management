@@ -43,10 +43,10 @@ export function PartnerForm({ initialData, onSubmit, isSubmitting = false }: Par
     formState: { errors },
     setValue,
     watch
-  } = useForm({
+  } = useForm<PartnerFormData>({
     resolver: zodResolver(partnerSchema),
     defaultValues: {
-      tier: 'bronze',
+      tier: 'bronze' as const,
       commissionRate: 5,
       ...initialData
     }
