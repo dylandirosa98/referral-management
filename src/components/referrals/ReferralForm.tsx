@@ -57,10 +57,10 @@ export function ReferralForm({
     formState: { errors },
     setValue,
     watch
-  } = useForm({
+  } = useForm<ReferralFormData>({
     resolver: zodResolver(referralSchema),
     defaultValues: {
-      urgency: 'normal',
+      urgency: 'normal' as const,
       ...initialData
     }
   })
@@ -82,10 +82,10 @@ export function ReferralForm({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="partner_id">Referring Partner *</Label>
+              <Label htmlFor="partnerId">Referring Partner *</Label>
               <Select
-                onValueChange={(value) => setValue('partner_id', value)}
-                defaultValue={initialData?.partner_id}
+                onValueChange={(value) => setValue('partnerId', value)}
+                defaultValue={initialData?.partnerId}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select partner" />
@@ -98,16 +98,16 @@ export function ReferralForm({
                   ))}
                 </SelectContent>
               </Select>
-              {errors.partner_id && (
-                <p className="text-sm text-red-600 mt-1">{errors.partner_id.message}</p>
+              {errors.partnerId && (
+                <p className="text-sm text-red-600 mt-1">{errors.partnerId.message}</p>
               )}
             </div>
             
             <div>
-              <Label htmlFor="project_type">Project Type *</Label>
+              <Label htmlFor="projectType">Project Type *</Label>
               <Select
-                onValueChange={(value) => setValue('project_type', value as any)}
-                defaultValue={initialData?.project_type}
+                onValueChange={(value) => setValue('projectType', value as any)}
+                defaultValue={initialData?.projectType}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select project type" />
@@ -120,18 +120,18 @@ export function ReferralForm({
                   ))}
                 </SelectContent>
               </Select>
-              {errors.project_type && (
-                <p className="text-sm text-red-600 mt-1">{errors.project_type.message}</p>
+              {errors.projectType && (
+                <p className="text-sm text-red-600 mt-1">{errors.projectType.message}</p>
               )}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="roof_type">Roof Type</Label>
+              <Label htmlFor="roofType">Roof Type</Label>
               <Select
-                onValueChange={(value) => setValue('roof_type', value as any)}
-                defaultValue={initialData?.roof_type}
+                onValueChange={(value) => setValue('roofType', value as any)}
+                defaultValue={initialData?.roofType}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select roof type" />
@@ -145,7 +145,7 @@ export function ReferralForm({
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <Label htmlFor="urgency">Urgency Level</Label>
               <Select
@@ -153,7 +153,7 @@ export function ReferralForm({
                 defaultValue={initialData?.urgency || 'normal'}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select urgency" />
                 </SelectTrigger>
                 <SelectContent>
                   {urgencyLevels.map((level) => (
@@ -167,26 +167,32 @@ export function ReferralForm({
           </div>
 
           <div>
-            <Label htmlFor="estimated_value">Estimated Project Value ($)</Label>
+            <Label htmlFor="estimatedValue">Estimated Project Value ($)</Label>
             <Input
-              id="estimated_value"
+              id="estimatedValue"
               type="number"
               step="0.01"
               min="0"
               placeholder="0.00"
-              {...register('estimated_value', { valueAsNumber: true })}
-              className={errors.estimated_value ? 'border-red-500' : ''}
+              {...register('estimatedValue', { valueAsNumber: true })}
+              className={errors.estimatedValue ? 'border-red-500' : ''}
             />
+            {errors.estimatedValue && (
+              <p className="text-sm text-red-600 mt-1">{errors.estimatedValue.message}</p>
+            )}
           </div>
 
           <div>
             <Label htmlFor="description">Project Description</Label>
             <Textarea
               id="description"
-              rows={3}
-              placeholder="Describe the roofing project details..."
+              placeholder="Describe the roofing project, issues found, or work needed..."
               {...register('description')}
+              className={errors.description ? 'border-red-500' : ''}
             />
+            {errors.description && (
+              <p className="text-sm text-red-600 mt-1">{errors.description.message}</p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -196,69 +202,67 @@ export function ReferralForm({
           <CardTitle>Customer Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="customer_name">Customer Name *</Label>
-            <Input
-              id="customer_name"
-              {...register('customer_name')}
-                              className={errors.customer_name ? 'border-red-500' : ''}
-            />
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="customer_email">Email Address</Label>
+              <Label htmlFor="customerName">Customer Name *</Label>
               <Input
-                id="customer_email"
+                id="customerName"
+                {...register('customerName')}
+                className={errors.customerName ? 'border-red-500' : ''}
+              />
+              {errors.customerName && (
+                <p className="text-sm text-red-600 mt-1">{errors.customerName.message}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="customerEmail">Email Address</Label>
+              <Input
+                id="customerEmail"
                 type="email"
-                {...register('customer_email')}
-                className={errors.customer_email ? 'border-red-500' : ''}
+                {...register('customerEmail')}
+                className={errors.customerEmail ? 'border-red-500' : ''}
               />
-            </div>
-            
-            <div>
-              <Label htmlFor="customer_phone">Phone Number</Label>
-              <Input
-                id="customer_phone"
-                {...register('customer_phone')}
-                className={errors.customer_phone ? 'border-red-500' : ''}
-              />
+              {errors.customerEmail && (
+                <p className="text-sm text-red-600 mt-1">{errors.customerEmail.message}</p>
+              )}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="customer_address.street">Street Address</Label>
-              <Input
-                id="customer_address.street"
-                {...register('customer_address.street')}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="customer_address.city">City</Label>
-              <Input
-                id="customer_address.city"
-                {...register('customer_address.city')}
-              />
-            </div>
+          <div>
+            <Label htmlFor="customerPhone">Phone Number</Label>
+            <Input
+              id="customerPhone"
+              type="tel"
+              {...register('customerPhone')}
+              className={errors.customerPhone ? 'border-red-500' : ''}
+            />
+            {errors.customerPhone && (
+              <p className="text-sm text-red-600 mt-1">{errors.customerPhone.message}</p>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="customer_address.state">State</Label>
+          <div className="space-y-2">
+            <Label>Customer Address</Label>
+            <div className="grid grid-cols-1 gap-4">
               <Input
-                id="customer_address.state"
-                {...register('customer_address.state')}
+                placeholder="Street Address"
+                {...register('customerAddress.street')}
               />
-            </div>
-            
-            <div>
-              <Label htmlFor="customer_address.zip">ZIP Code</Label>
-              <Input
-                id="customer_address.zip"
-                {...register('customer_address.zip')}
-              />
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <Input
+                  placeholder="City"
+                  {...register('customerAddress.city')}
+                />
+                <Input
+                  placeholder="State"
+                  {...register('customerAddress.state')}
+                />
+                <Input
+                  placeholder="ZIP Code"
+                  {...register('customerAddress.zip')}
+                />
+              </div>
             </div>
           </div>
         </CardContent>
@@ -266,15 +270,14 @@ export function ReferralForm({
 
       <Card>
         <CardHeader>
-          <CardTitle>Additional Notes</CardTitle>
+          <CardTitle>Additional Information</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div>
             <Label htmlFor="notes">Internal Notes</Label>
             <Textarea
               id="notes"
-              rows={3}
-              placeholder="Any internal notes about this referral..."
+              placeholder="Any additional notes about this referral..."
               {...register('notes')}
             />
           </div>
@@ -282,10 +285,10 @@ export function ReferralForm({
       </Card>
 
       <div className="flex gap-4">
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Saving...' : initialData ? 'Update Referral' : 'Create Referral'}
+        <Button type="submit" disabled={isSubmitting} className="flex-1">
+          {isSubmitting ? 'Submitting...' : 'Submit Referral'}
         </Button>
-        <Button type="button" variant="outline">
+        <Button type="button" variant="outline" className="flex-1">
           Cancel
         </Button>
       </div>
