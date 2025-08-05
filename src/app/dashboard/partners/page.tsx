@@ -20,6 +20,9 @@ import { Plus, Search, MoreHorizontal, Eye, Edit, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 const getBusinessTypeLabel = (type: string) => {
   const labels = {
     hvac: 'HVAC',

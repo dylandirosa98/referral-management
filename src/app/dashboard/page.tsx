@@ -6,6 +6,9 @@ import { Plus, Eye, Calendar, FileText, DollarSign, BarChart3 } from 'lucide-rea
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 const getStatusBadge = (status: string) => {
   const variants = {
     new: 'bg-blue-100 text-blue-800',

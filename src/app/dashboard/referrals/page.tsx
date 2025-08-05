@@ -6,6 +6,9 @@ import { Plus, Search, Filter, MoreHorizontal, Eye, Edit } from 'lucide-react'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 const statusColumns = [
   { status: 'new', title: 'New Leads', color: 'bg-blue-50 border-blue-200' },
   { status: 'contacted', title: 'Contacted', color: 'bg-yellow-50 border-yellow-200' },

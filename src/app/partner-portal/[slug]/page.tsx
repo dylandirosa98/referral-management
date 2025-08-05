@@ -13,6 +13,9 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 const getStatusBadge = (status: string) => {
   const variants = {
     new: 'bg-blue-100 text-blue-800',
