@@ -43,6 +43,13 @@ const getStatusBadge = (status: string) => {
   return variants[status as keyof typeof variants] || 'bg-gray-100 text-gray-800'
 }
 
+interface PartnerAddress {
+  street?: string
+  city?: string
+  state?: string
+  zip?: string
+}
+
 async function getPartnerData(id: string) {
   try {
     const partner = await prisma.partner.findUnique({
@@ -63,6 +70,7 @@ async function getPartnerData(id: string) {
       ...partner,
       commissionRate: partner.commissionRate.toNumber(),
       totalCommissionEarned: partner.totalCommissionEarned.toNumber(),
+      address: partner.address as PartnerAddress | null,
       referrals: partner.referrals.map((referral: any) => ({
         ...referral,
         estimatedValue: referral.estimatedValue.toNumber(),
