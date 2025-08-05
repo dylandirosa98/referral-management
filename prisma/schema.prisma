@@ -1,0 +1,199 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum BusinessType {
+  hvac
+  solar
+  plumbing
+  electrical
+  siding
+  gutters
+  landscaping
+  general_contractor
+  real_estate
+  insurance_adjuster
+}
+
+enum PartnerTier {
+  bronze
+  silver
+  gold
+}
+
+enum PartnerStatus {
+  active
+  inactive
+  pending
+  suspended
+}
+
+enum ProjectType {
+  full_replacement
+  repair
+  maintenance
+  inspection
+  emergency
+  gutter_work
+  siding
+  solar_prep
+}
+
+enum RoofType {
+  asphalt_shingle
+  metal
+  tile
+  slate
+  flat
+  cedar_shake
+  other
+}
+
+enum ReferralStatus {
+  new
+  contacted
+  quoted
+  scheduled
+  in_progress
+  completed
+  won
+  lost
+}
+
+enum UrgencyLevel {
+  low
+  normal
+  high
+  emergency
+}
+
+enum PaymentMethod {
+  check
+  ach
+  stripe
+  manual
+}
+
+enum PaymentStatus {
+  pending
+  scheduled
+  paid
+  failed
+  cancelled
+}
+
+// Models
+model Partner {
+  id                       String        @id @default(cuid())
+  companyName              String        @map("company_name")
+  contactName              String        @map("contact_name")
+  email                    String        @unique
+  phone                    String?
+  businessType             BusinessType  @map("business_type")
+  address                  Json?
+  serviceAreas             String[]      @map("service_areas")
+  tier                     PartnerTier   @default(bronze)
+  commissionRate           Decimal       @default(5.00) @map("commission_rate") @db.Decimal(5, 2)
+  referralCount            Int           @default(0) @map("referral_count")
+  totalCommissionEarned    Decimal       @default(0) @map("total_commission_earned") @db.Decimal(10, 2)
+  status                   PartnerStatus @default(active)
+  portalSlug               String?       @unique @map("portal_slug")
+  notes                    String?
+  createdAt                DateTime      @default(now()) @map("created_at")
+  updatedAt                DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  referrals Referral[]
+  payments  Payment[]
+
+  @@map("partners")
+}
+
+model Referral {
+  id                String          @id @default(cuid())
+  partnerId         String          @map("partner_id")
+  
+  // Customer Information
+  customerName      String          @map("customer_name")
+  customerEmail     String?         @map("customer_email")
+  customerPhone     String?         @map("customer_phone")
+  customerAddress   Json?           @map("customer_address")
+  
+  // Project Details
+  projectType       ProjectType     @map("project_type")
+  roofType          RoofType?       @map("roof_type")
+  estimatedValue    Decimal?        @map("estimated_value") @db.Decimal(10, 2)
+  actualJobValue    Decimal?        @map("actual_job_value") @db.Decimal(10, 2)
+  urgency           UrgencyLevel    @default(normal)
+  description       String?
+  photos            String[]
+  
+  // Status & Tracking
+  status            ReferralStatus  @default(new)
+  commissionPct     Decimal?        @map("commission_pct") @db.Decimal(5, 2)
+  commissionDue     Decimal         @default(0) @map("commission_due") @db.Decimal(10, 2)
+  assignedTo        String?         @map("assigned_to")
+  followUpDate      DateTime?       @map("follow_up_date")
+  
+  // Metadata
+  notes             String?
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@map("referrals")
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  partnerId     String        @map("partner_id")
+  referralIds   String[]      @map("referral_ids")
+  amount        Decimal       @db.Decimal(10, 2)
+  paymentMethod PaymentMethod @default(check) @map("payment_method")
+  status        PaymentStatus @default(pending)
+  scheduledDate DateTime?     @map("scheduled_date")
+  paidDate      DateTime?     @map("paid_date")
+  transactionId String?       @map("transaction_id")
+  notes         String?
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  // Relations
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model SystemSettings {
+  id                   String   @id @default(cuid())
+  commissionTiers      Json     @default("[{\"tier\": \"bronze\", \"min_referrals\": 0, \"commission_pct\": 5, \"name\": \"Bronze Partner\"}, {\"tier\": \"silver\", \"min_referrals\": 5, \"commission_pct\": 6, \"name\": \"Silver Partner\"}, {\"tier\": \"gold\", \"min_referrals\": 15, \"commission_pct\": 7, \"name\": \"Gold Partner\"}]") @map("commission_tiers")
+  emailTemplates       Json     @default("{}") @map("email_templates")
+  notificationSettings Json     @default("{}") @map("notification_settings")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   @default("staff") // staff, admin, partner
+  partnerId String?  @map("partner_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
