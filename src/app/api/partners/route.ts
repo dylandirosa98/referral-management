@@ -80,24 +80,27 @@ export async function POST(request: NextRequest) {
     })
 
     // Send welcome email to new partner
-    try {
-      await sendEmail({
-        to: partner.email,
-        subject: 'Welcome to Our Partner Program!',
-        html: `
-          <h2>Welcome ${partner.contactName}!</h2>
-          <p>Thank you for joining our referral partner program. Your account has been created successfully.</p>
-          <p><strong>Company:</strong> ${partner.companyName}</p>
-          <p><strong>Partner Tier:</strong> ${partner.tier.charAt(0).toUpperCase() + partner.tier.slice(1)}</p>
-          <p><strong>Commission Rate:</strong> ${partner.commissionRate}%</p>
-          <p>You can access your partner portal at: <a href="${process.env.NEXT_PUBLIC_APP_URL}/partner-portal/${partner.portalSlug}">Partner Portal</a></p>
-          <p>Best regards,<br>The Roofing Team</p>
-        `
-      })
-    } catch (emailError) {
-      console.error('Email sending failed:', emailError)
-      // Don't fail the request if email fails
-    }
+    // try {
+    //   await sendEmail({
+    //     to: partner.email,
+    //     subject: 'Welcome to Our Partner Program!',
+    //     html: `
+    //       <h2>Welcome ${partner.contactName}!</h2>
+    //       <p>Thank you for joining our referral partner program. Your account has been created successfully.</p>
+    //       <p><strong>Company:</strong> ${partner.companyName}</p>
+    //       <p><strong>Partner Tier:</strong> ${partner.tier.charAt(0).toUpperCase() + partner.tier.slice(1)}</p>
+    //       <p><strong>Commission Rate:</strong> ${partner.commissionRate}%</p>
+    //       <p>You can access your partner portal at: <a href="${process.env.NEXT_PUBLIC_APP_URL}/partner-portal/${partner.portalSlug}">Partner Portal</a></p>
+    //       <p>Best regards,<br>The Roofing Team</p>
+    //     `
+    //   })
+    // } catch (emailError) {
+    //   console.error('Email sending failed:', emailError)
+    //   // Don't fail the request if email fails
+    // }
+
+    console.log('Partner created successfully:', partner.id)
+    console.log('Portal slug:', partner.portalSlug)
 
     return NextResponse.json(partner, { status: 201 })
   } catch (error) {
