@@ -8,26 +8,18 @@ export const partnerSchema = z.object({
   phone: z.string().optional().or(z.literal('')),
   businessType: z.enum([
     'hvac', 'solar', 'plumbing', 'electrical', 'siding', 'gutters',
-    'landscaping', 'general_contractor', 'real_estate', 'insurance_adjuster'
+    'landscaping', 'general_contractor', 'real_estate', 'insurance_adjuster'  
   ]),
-  // Flatten address fields to match form structure
-  'address.street': z.string().optional().or(z.literal('')),
-  'address.city': z.string().optional().or(z.literal('')),
-  'address.state': z.string().optional().or(z.literal('')),
-  'address.zip': z.string().optional().or(z.literal('')),
-  serviceAreas: z.string().optional().or(z.literal('')).transform((val) => 
-    val ? val.split(',').map(area => area.trim()).filter(Boolean) : []
-  ),
+  address: z.object({
+    street: z.string().optional().or(z.literal('')),
+    city: z.string().optional().or(z.literal('')),
+    state: z.string().optional().or(z.literal('')),
+    zip: z.string().optional().or(z.literal(''))
+  }).optional(),
+  serviceAreas: z.array(z.string()).optional().default([]),
   tier: z.enum(['bronze', 'silver', 'gold']).default('bronze'),
   commissionRate: z.number().min(0).max(100).default(5),
   notes: z.string().optional().or(z.literal(''))
-}).transform((data) => {
-  // Transform flat address fields back to nested object for database
-  const { 'address.street': street, 'address.city': city, 'address.state': state, 'address.zip': zip, ...rest } = data
-  return {
-    ...rest,
-    address: street || city || state || zip ? { street, city, state, zip } : undefined
-  }
 })
 
 // Referral validation schema
