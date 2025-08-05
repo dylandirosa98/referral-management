@@ -25,7 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { MoreHorizontal, Eye, Edit, Trash2, AlertTriangle } from 'lucide-react'
+import { MoreHorizontal, Eye, Edit, Trash2, AlertTriangle, ExternalLink, Copy } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -42,6 +42,7 @@ interface Partner {
   totalCommissionEarned: number
   status: string
   createdAt: string
+  portalSlug?: string
 }
 
 interface PartnersTableProps {
@@ -141,6 +142,7 @@ export function PartnersTable({ partners: initialPartners }: PartnersTableProps)
             <TableHead>Commission</TableHead>
             <TableHead>Referrals</TableHead>
             <TableHead>Total Earned</TableHead>
+            <TableHead>Portal URL</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="w-12"></TableHead>
           </TableRow>
@@ -181,6 +183,38 @@ export function PartnersTable({ partners: initialPartners }: PartnersTableProps)
                 <span className="font-medium">
                   ${partner.totalCommissionEarned.toLocaleString()}
                 </span>
+              </TableCell>
+              <TableCell>
+                {partner.portalSlug ? (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 p-0 text-blue-600 hover:text-blue-800"
+                      onClick={() => {
+                        const url = `${window.location.origin}/partner-portal/${partner.portalSlug}`
+                        window.open(url, '_blank')
+                      }}
+                    >
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      Visit Portal
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => {
+                        const url = `${window.location.origin}/partner-portal/${partner.portalSlug}`
+                        navigator.clipboard.writeText(url)
+                      }}
+                      title="Copy URL"
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <span className="text-gray-400 text-sm">No portal</span>
+                )}
               </TableCell>
               <TableCell>
                 <Badge className={getStatusBadge(partner.status)}>

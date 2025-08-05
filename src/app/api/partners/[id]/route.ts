@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { partnerSchema } from '@/lib/validations'
 
 export async function DELETE(
   request: NextRequest,
@@ -91,6 +92,52 @@ export async function GET(
     return NextResponse.json(partner)
   } catch (error) {
     console.error('Partner fetch error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const body = await request.json()
+
+    // Check if partner exists
+    const existingPartner = await prisma.partner.findUnique({
+      where: { id }
+    })
+
+    if (!existingPartner) {
+      return NextResponse.json({ error: 'Partner not found' }, { status: 404 })
+    }
+
+    // Validate the data
+    const validatedData = partnerSchema.parse(body)
+
+    // Update the partner
+    const updatedPartner = await prisma.partner.update({
+      where: { id },
+      data: validatedData
+    })
+
+    return NextResponse.json({
+      message: 'Partner updated successfully',
+      partner: updatedPartner
+    })
+  } catch (error) {
+    console.error('Partner update error:', error)
+    
+    if (error instanceof Error) {
+      if (error.message.includes('validation')) {
+        return NextResponse.json({
+          error: 'Invalid data provided',
+          details: error.message
+        }, { status: 400 })
+      }
+    }
+    
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

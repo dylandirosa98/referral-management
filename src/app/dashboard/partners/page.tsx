@@ -30,6 +30,7 @@ async function getPartnersData() {
       referralCount: partner.referralCount,
       totalCommissionEarned: partner.totalCommissionEarned.toNumber(),
       status: partner.status,
+      portalSlug: partner.portalSlug,
       createdAt: partner.createdAt.toISOString()
     }))
   } catch (error) {

@@ -1,5 +1,0 @@
-[33m36d2463[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix Railway database setup with startup script
-[33ma4edeea[m Add database schema setup to build process for Railway deployment
-[33m8e22dc9[m Add test API endpoints and test directory
-[33m40fe10e[m Temporarily disable email sending to isolate database vs email error
-[33m121aa6d[m Add detailed error logging and database connection test for debugging

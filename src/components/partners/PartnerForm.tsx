@@ -15,6 +15,7 @@ interface PartnerFormProps {
   initialData?: Partial<PartnerFormData>
   onSubmit: (data: PartnerFormData) => Promise<void>
   isSubmitting?: boolean
+  submitButtonText?: React.ReactNode
 }
 
 const businessTypes = [
@@ -36,7 +37,7 @@ const partnerTiers = [
   { value: 'gold', label: 'Gold (7%)', color: 'bg-yellow-100 text-yellow-800' }
 ]
 
-export function PartnerForm({ initialData, onSubmit, isSubmitting = false }: PartnerFormProps) {
+export function PartnerForm({ initialData, onSubmit, isSubmitting = false, submitButtonText }: PartnerFormProps) {
   const {
     register,
     handleSubmit,
@@ -266,8 +267,8 @@ export function PartnerForm({ initialData, onSubmit, isSubmitting = false }: Par
       </Card>
 
       <div className="flex gap-4">
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Saving...' : initialData ? 'Update Partner' : 'Create Partner'}
+                    <Button type="submit" disabled={isSubmitting}>
+              {submitButtonText || (isSubmitting ? 'Saving...' : initialData ? 'Update Partner' : 'Create Partner')}
         </Button>
         <Button type="button" variant="outline">
           Cancel

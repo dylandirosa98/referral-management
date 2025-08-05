@@ -78,11 +78,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Partner not found' }, { status: 404 })
     }
 
+    // Calculate commission due based on estimated value
+    const commissionDue = validatedData.estimatedValue 
+      ? (validatedData.estimatedValue * (partner.commissionRate.toNumber() / 100))
+      : 0
+
     // Create referral with commission percentage from partner
     const referral = await prisma.referral.create({
       data: {
         ...validatedData,
         commissionPct: partner.commissionRate,
+        commissionDue: commissionDue,
         status: 'new'
       }
     })
