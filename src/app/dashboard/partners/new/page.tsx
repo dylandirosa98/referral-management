@@ -18,6 +18,7 @@ export default function NewPartnerPage() {
     setIsSubmitting(true)
     
     try {
+      console.log('Submitting partner data:', data)
       const response = await fetch('/api/partners', {
         method: 'POST',
         headers: {

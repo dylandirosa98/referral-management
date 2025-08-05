@@ -48,6 +48,7 @@ export function PartnerForm({ initialData, onSubmit, isSubmitting = false }: Par
     defaultValues: {
       tier: 'bronze' as const,
       commissionRate: 5,
+      businessType: 'hvac' as const,
       ...initialData
     }
   })
@@ -126,7 +127,7 @@ export function PartnerForm({ initialData, onSubmit, isSubmitting = false }: Par
             <Label htmlFor="businessType">Business Type *</Label>
             <Select
               onValueChange={(value) => setValue('businessType', value as any)}
-              defaultValue={initialData?.businessType}
+              defaultValue={initialData?.businessType || 'hvac'}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select business type" />

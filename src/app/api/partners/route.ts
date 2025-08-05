@@ -54,9 +54,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    console.log('Received partner data:', body)
     
     // Validate the data
     const validatedData = partnerSchema.parse(body)
+    console.log('Validated partner data:', validatedData)
     
     // Generate portal slug from company name
     const portalSlug = validatedData.companyName
@@ -96,7 +98,12 @@ export async function POST(request: NextRequest) {
     console.error('API error:', error)
     
     if (error instanceof Error && error.name === 'ZodError') {
-      return NextResponse.json({ error: 'Invalid data provided' }, { status: 400 })
+      console.error('Zod validation error:', error)
+      return NextResponse.json({ 
+        error: 'Invalid data provided', 
+        details: error.message,
+        issues: (error as any).issues
+      }, { status: 400 })
     }
     
     // Handle unique constraint violation

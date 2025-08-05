@@ -11,10 +11,10 @@ export const partnerSchema = z.object({
     'landscaping', 'general_contractor', 'real_estate', 'insurance_adjuster'
   ]),
   address: z.object({
-    street: z.string().optional(),
-    city: z.string().optional(),
-    state: z.string().optional(),
-    zip: z.string().optional()
+    street: z.string().optional().or(z.literal('')),
+    city: z.string().optional().or(z.literal('')),
+    state: z.string().optional().or(z.literal('')),
+    zip: z.string().optional().or(z.literal(''))
   }).optional(),
   serviceAreas: z.string().optional().transform((val) => 
     val ? val.split(',').map(area => area.trim()).filter(Boolean) : []
