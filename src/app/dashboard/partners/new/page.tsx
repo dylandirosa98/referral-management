@@ -18,7 +18,18 @@ export default function NewPartnerPage() {
     setIsSubmitting(true)
     
     try {
-      console.log('Submitting partner data:', data)
+      console.log('=== SUBMITTING PARTNER DATA ===')
+      console.log('Full data object:', JSON.stringify(data, null, 2))
+      console.log('Data keys:', Object.keys(data))
+      console.log('Company Name:', data.companyName)
+      console.log('Contact Name:', data.contactName)
+      console.log('Email:', data.email)
+      console.log('Business Type:', data.businessType)
+      console.log('Address object:', data.address)
+      console.log('Service Areas:', data.serviceAreas)
+      console.log('Tier:', data.tier)
+      console.log('Commission Rate:', data.commissionRate)
+      
       const response = await fetch('/api/partners', {
         method: 'POST',
         headers: {

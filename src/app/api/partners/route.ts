@@ -101,15 +101,24 @@ export async function POST(request: NextRequest) {
     console.error('Error name:', (error as any)?.name)
     console.error('Error message:', (error as any)?.message)
     
-    if (error instanceof Error && error.name === 'ZodError') {
-      console.error('Zod validation error details:', JSON.stringify((error as any).issues, null, 2))
-      return NextResponse.json({ 
-        error: 'Invalid data provided', 
-        details: error.message,
-        issues: (error as any).issues,
-        receivedData: body
-      }, { status: 400 })
-    }
+          if (error instanceof Error && error.name === 'ZodError') {
+        const issues = (error as any).issues
+        console.error('=== ZOD VALIDATION ERROR ===')
+        console.error('Issues count:', issues.length)
+        issues.forEach((issue: any, index: number) => {
+          console.error(`Issue ${index + 1}:`)
+          console.error('  Path:', issue.path)
+          console.error('  Code:', issue.code)
+          console.error('  Message:', issue.message)
+          console.error('  Received:', issue.received)
+        })
+        return NextResponse.json({ 
+          error: 'Invalid data provided', 
+          details: error.message,
+          issues: issues,
+          receivedData: body
+        }, { status: 400 })
+      }
     
     // Handle unique constraint violation
     if (error instanceof Error && error.message.includes('Unique constraint')) {
