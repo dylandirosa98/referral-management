@@ -184,7 +184,7 @@ export default async function PartnerDashboardPage({
                 ${partnerData.totalCommissionEarned.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                {partnerData.commissionRate}% commission rate
+                {partnerData.commissionRate.toNumber()}% commission rate
               </p>
             </CardContent>
           </Card>
