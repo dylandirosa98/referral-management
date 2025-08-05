@@ -164,7 +164,7 @@ export default function ReferralsPage() {
                       <div className="space-y-2">
                         <div className="flex items-start justify-between">
                           <h4 className="font-medium text-sm">{referral.customer_name}</h4>
-                          <Badge className={getUrgencyBadge(referral.urgency)} size="sm">
+                          <Badge className={getUrgencyBadge(referral.urgency)}>
                             {referral.urgency}
                           </Badge>
                         </div>
