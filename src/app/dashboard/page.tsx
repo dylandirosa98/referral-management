@@ -42,8 +42,8 @@ async function getDashboardData() {
       }
     })
 
-    // Get commission stats
-    const pendingCommissions = await prisma.referral.aggregate({
+    // Get commission stats (with fallback for empty tables)
+    const pendingCommissions = totalReferrals > 0 ? await prisma.referral.aggregate({
       where: {
         status: {
           in: ['new', 'contacted', 'quoted', 'scheduled', 'in_progress']
@@ -52,16 +52,16 @@ async function getDashboardData() {
       _sum: {
         commissionDue: true
       }
-    })
+    }) : { _sum: { commissionDue: null } }
 
-    const paidCommissions = await prisma.referral.aggregate({
+    const paidCommissions = totalReferrals > 0 ? await prisma.referral.aggregate({
       where: {
         status: 'won'
       },
       _sum: {
         commissionDue: true
       }
-    })
+    }) : { _sum: { commissionDue: null } }
 
     // Get conversion rate
     const wonReferrals = await prisma.referral.count({
@@ -77,29 +77,29 @@ async function getDashboardData() {
     const lastMonth = new Date(currentMonth)
     lastMonth.setMonth(lastMonth.getMonth() - 1)
 
-    const currentMonthReferrals = await prisma.referral.count({
+    const currentMonthReferrals = totalReferrals > 0 ? await prisma.referral.count({
       where: {
         createdAt: {
           gte: currentMonth
         }
       }
-    })
+    }) : 0
 
-    const lastMonthReferrals = await prisma.referral.count({
+    const lastMonthReferrals = totalReferrals > 0 ? await prisma.referral.count({
       where: {
         createdAt: {
           gte: lastMonth,
           lt: currentMonth
         }
       }
-    })
+    }) : 0
 
     const monthlyGrowth = lastMonthReferrals > 0 
       ? Math.round(((currentMonthReferrals - lastMonthReferrals) / lastMonthReferrals) * 100)
       : currentMonthReferrals > 0 ? 100 : 0
 
     // Get recent referrals
-    const recentReferrals = await prisma.referral.findMany({
+    const recentReferrals = totalReferrals > 0 ? await prisma.referral.findMany({
       include: {
         partner: {
           select: {
@@ -111,7 +111,7 @@ async function getDashboardData() {
         createdAt: 'desc'
       },
       take: 5
-    })
+    }) : []
 
     return {
       stats: {
