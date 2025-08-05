@@ -4,62 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Plus, Search, Filter, MoreHorizontal, Eye, Edit } from 'lucide-react'
 import Link from 'next/link'
-
-// Mock data for development
-const mockReferrals = [
-  {
-    id: '1',
-    customer_name: 'John Smith',
-    customer_email: 'john@example.com',
-    customer_phone: '(555) 123-4567',
-    partner_name: 'HVAC Pro Solutions',
-    project_type: 'full_replacement',
-    roof_type: 'asphalt_shingle',
-    estimated_value: 8500,
-    status: 'new',
-    urgency: 'normal',
-    created_at: '2024-01-15T10:30:00Z'
-  },
-  {
-    id: '2',
-    customer_name: 'Sarah Johnson',
-    customer_email: 'sarah@example.com',
-    customer_phone: '(555) 234-5678',
-    partner_name: 'Solar Energy Inc',
-    project_type: 'repair',
-    roof_type: 'metal',
-    estimated_value: 15000,
-    status: 'quoted',
-    urgency: 'high',
-    created_at: '2024-01-15T09:15:00Z'
-  },
-  {
-    id: '3',
-    customer_name: 'Mike Brown',
-    customer_email: 'mike@example.com',
-    customer_phone: '(555) 345-6789',
-    partner_name: 'Elite Plumbing',
-    project_type: 'maintenance',
-    roof_type: 'tile',
-    estimated_value: 6200,
-    status: 'scheduled',
-    urgency: 'normal',
-    created_at: '2024-01-14T16:45:00Z'
-  },
-  {
-    id: '4',
-    customer_name: 'Lisa Wilson',
-    customer_email: 'lisa@example.com',
-    customer_phone: '(555) 456-7890',
-    partner_name: 'HVAC Pro Solutions',
-    project_type: 'full_replacement',
-    roof_type: 'asphalt_shingle',
-    estimated_value: 12000,
-    status: 'won',
-    urgency: 'normal',
-    created_at: '2024-01-12T14:20:00Z'
-  }
-]
+import { prisma } from '@/lib/prisma'
 
 const statusColumns = [
   { status: 'new', title: 'New Leads', color: 'bg-blue-50 border-blue-200' },
@@ -102,7 +47,38 @@ const formatProjectType = (type: string) => {
   return type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
 }
 
-export default function ReferralsPage() {
+async function getReferralsData() {
+  const referrals = await prisma.referral.findMany({
+    include: {
+      partner: {
+        select: {
+          companyName: true
+        }
+      }
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
+  })
+
+  return referrals.map((referral: any) => ({
+    id: referral.id,
+    customerName: referral.customerName,
+    customerEmail: referral.customerEmail || '',
+    customerPhone: referral.customerPhone || '',
+    partnerName: referral.partner.companyName,
+    projectType: referral.projectType,
+    roofType: referral.roofType || '',
+    estimatedValue: referral.estimatedValue.toNumber(),
+    status: referral.status,
+    urgency: referral.urgency,
+    createdAt: referral.createdAt.toISOString()
+  }))
+}
+
+export default async function ReferralsPage() {
+  const referrals = await getReferralsData()
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -145,7 +121,7 @@ export default function ReferralsPage() {
       {/* Kanban Board */}
       <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-8 gap-4 overflow-x-auto">
         {statusColumns.map((column) => {
-          const columnReferrals = mockReferrals.filter(r => r.status === column.status)
+          const columnReferrals = referrals.filter((r: any) => r.status === column.status)
           
           return (
             <Card key={column.status} className={`${column.color} min-w-[280px]`}>
@@ -158,31 +134,31 @@ export default function ReferralsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 max-h-96 overflow-y-auto">
-                {columnReferrals.map((referral) => (
+                {columnReferrals.map((referral: any) => (
                   <Card key={referral.id} className="bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                     <CardContent className="p-3">
                       <div className="space-y-2">
                         <div className="flex items-start justify-between">
-                          <h4 className="font-medium text-sm">{referral.customer_name}</h4>
+                          <h4 className="font-medium text-sm">{referral.customerName}</h4>
                           <Badge className={getUrgencyBadge(referral.urgency)}>
                             {referral.urgency}
                           </Badge>
                         </div>
                         
                         <p className="text-xs text-gray-600">
-                          {formatProjectType(referral.project_type)} • {referral.roof_type?.replace('_', ' ')}
+                          {formatProjectType(referral.projectType)} {referral.roofType ? `• ${referral.roofType.replace('_', ' ')}` : ''}
                         </p>
                         
                         <p className="text-xs text-gray-500">
-                          from {referral.partner_name}
+                          from {referral.partnerName}
                         </p>
                         
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-green-600">
-                            ${referral.estimated_value.toLocaleString()}
+                            ${referral.estimatedValue.toLocaleString()}
                           </span>
                           <span className="text-xs text-gray-500">
-                            {new Date(referral.created_at).toLocaleDateString()}
+                            {new Date(referral.createdAt).toLocaleDateString()}
                           </span>
                         </div>
                         
@@ -221,7 +197,9 @@ export default function ReferralsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{mockReferrals.filter(r => r.status === 'new').length}</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {referrals.filter((r: any) => r.status === 'new').length}
+              </div>
               <div className="text-sm text-gray-600">New Leads</div>
             </div>
           </CardContent>
@@ -231,7 +209,7 @@ export default function ReferralsPage() {
           <CardContent className="pt-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">
-                {mockReferrals.filter(r => ['contacted', 'quoted', 'scheduled', 'in_progress'].includes(r.status)).length}
+                {referrals.filter((r: any) => ['contacted', 'quoted', 'scheduled', 'in_progress'].includes(r.status)).length}
               </div>
               <div className="text-sm text-gray-600">In Progress</div>
             </div>
@@ -241,7 +219,9 @@ export default function ReferralsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{mockReferrals.filter(r => r.status === 'won').length}</div>
+              <div className="text-2xl font-bold text-green-600">
+                {referrals.filter((r: any) => r.status === 'won').length}
+              </div>
               <div className="text-sm text-gray-600">Won</div>
             </div>
           </CardContent>
@@ -251,7 +231,7 @@ export default function ReferralsPage() {
           <CardContent className="pt-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
-                ${mockReferrals.reduce((sum, r) => sum + r.estimated_value, 0).toLocaleString()}
+                ${referrals.reduce((sum: number, r: any) => sum + r.estimatedValue, 0).toLocaleString()}
               </div>
               <div className="text-sm text-gray-600">Total Pipeline Value</div>
             </div>

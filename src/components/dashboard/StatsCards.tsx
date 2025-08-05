@@ -93,16 +93,4 @@ export function StatsCards({ stats }: StatsCardsProps) {
       })}
     </div>
   )
-}
-
-// Default stats for development/demo
-export const defaultStats = {
-  totalPartners: 24,
-  activePartners: 21,
-  totalReferrals: 156,
-  activeReferrals: 23,
-  pendingCommissions: 12500,
-  paidCommissions: 8750,
-  conversionRate: 68,
-  monthlyGrowth: 12
 } 
