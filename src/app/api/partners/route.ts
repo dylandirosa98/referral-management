@@ -11,8 +11,14 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10')
     const search = searchParams.get('search') || ''
     const status = searchParams.get('status') || ''
+    const slug = searchParams.get('slug') || ''
     
     const where: any = {}
+    
+    // If slug is provided, find by portalSlug
+    if (slug) {
+      where.portalSlug = slug
+    }
     
     if (search) {
       where.OR = [
